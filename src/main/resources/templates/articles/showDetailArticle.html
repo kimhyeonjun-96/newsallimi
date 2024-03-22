@@ -1,0 +1,35 @@
+<!DOCTYPE HTML>
+<html xmlns:th="http://www.thymeleaf.org">
+<head th:replace="fragments/header :: header"/>
+<body>
+    <div class="container">
+        <div th:replace="fragments/bodyHeader :: bodyHeader"/>
+
+        <div class="user-details">
+            <div class="user-info">
+                <table class="table table-striped">
+                    <tbody>
+                    <tr>
+                        <input type="hidden" th:value="${articleDTO.articleId}"/>
+                    </tr>
+                    <tr>
+                        <th>제목</th>
+                        <td th:text="${articleDTO.title}"></td>
+                        <th>작성일자</th>
+                        <td th:text="${articleDTO.createDate}"></td>
+                        <th>작성자</th>
+                        <td th:text="${articleDTO.member.memberId}"></td>
+                    </tr>
+                    <tr>
+                        <td colspan="6" th:text="${articleDTO.content}"></td>
+                    </tr>
+
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <div th:replace="fragments/footer :: footer"/>
+    </div> <!-- /container -->
+</body>
+</html>

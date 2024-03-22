@@ -1,0 +1,26 @@
+<!DOCTYPE HTML>
+<html xmlns:th="http://www.thymeleaf.org">
+<head th:replace="fragments/header :: header"/>
+<style>
+    .fieldError {
+        border-color: #bd2130;
+    }
+    .center {
+        text-align: center;
+    }
+</style>
+<body>
+<div class="container">
+    <div th:replace="fragments/bodyHeader :: bodyHeader"/>
+
+    <!-- 카카오톡 로그인 버튼 -->
+    <div class="jumbotron">
+        <h2>로그인 페이지</h2>
+        <a href="/oauth2/authorization/kakao">
+            <img src="/images/kakao_login_medium_wide.png">
+        </a>
+    </div>
+    <div th:replace="fragments/footer :: footer"/>
+</div> <!-- /container -->
+</body>
+</html>

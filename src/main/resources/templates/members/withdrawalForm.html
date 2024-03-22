@@ -1,0 +1,71 @@
+<!DOCTYPE HTML>
+<html xmlns:th="http://www.thymeleaf.org">
+<head th:replace="fragments/header :: header"/>
+<style>
+    .fieldError {
+        border-color: #bd2130;
+    } </style>
+<body>
+    <div class="container">
+        <div th:replace="fragments/bodyHeader :: bodyHeader"/>
+
+        <!-- 이메일 인증 요청 버튼 -->
+        <form action="#" method="post" th:action="@{/request-email-verification}">
+            <div class="form-group">
+                <label for="email">이메일 인증</label>
+                <input type="hidden" th:value="${memberDto.id}"/>
+                <input type="email" id="email" name="email" class="form-control" placeholder="이메일" th:value="${memberDto.email}" readonly>
+                <button id="request-verification-btn" type="submit" class="btn btn-primary">이메일 인증 요청</button>
+            </div>
+        </form>
+
+        <!-- 이메일 인증 코드 입력 폼 -->
+        <form action="#" method="post" th:action="@{/verify-email}" th:if="${verificationRequested}">
+            <div class="form-group">
+                <label for="verificationCode">인증 코드</label>
+                <input type="text" id="verificationCode" name="verificationCode" class="form-control" placeholder="인증 코드" required>
+                <p>이메일로 전송된 코드를 입력하세요.</p>
+                <button id="verify-code-btn" type="submit" class="btn btn-primary">인증 확인</button>
+            </div>
+        </form>
+
+        <!-- 회원 탈퇴 버튼 -->
+        <form action="#" method="post" th:action="@{/withdraw}" th:if="${emailVerified}">
+            <button type="submit" class="btn btn-danger">회원 탈퇴</button>
+        </form>
+
+        <br/>
+        <div th:replace="fragments/footer :: footer"/>
+    </div> <!-- /container -->
+</body>
+
+<script>
+    // 이메일 인증 요청 버튼 클릭 시
+    $("#request-verification-btn").click(function() {
+        var email = $("#email").val(); // 사용자 이메일 가져오기
+        $.post("/request-email-verification", { id: id, email: email }, function(response) {
+            // 서버 응답이 성공인 경우
+            if (response === "success") {
+                // 이메일 인증 요청이 성공했음을 표시하기 위해 verificationRequested 변수를 설정
+                window.verificationRequested = true;
+                // 이메일 인증 코드 입력 폼 표시
+                $("#verification-code-form").show();
+            }
+        });
+    });
+
+    // 인증 확인 버튼 클릭 시
+    $("#verify-code-btn").click(function() {
+        var verificationCode = $("#verificationCode").val(); // 인증 코드 가져오기
+        $.post("/verify-email", { verificationCode: verificationCode }, function(response) {
+            // 서버 응답이 성공인 경우
+            if (response === "success") {
+                // 이메일 인증이 완료되었음을 표시하기 위해 emailVerified 변수를 설정
+                window.emailVerified = true;
+                // 회원 탈퇴 버튼 활성화
+                $("#withdrawal-btn").prop("disabled", false);
+            }
+        });
+    });
+</script>
+</html>

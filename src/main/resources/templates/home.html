@@ -1,0 +1,46 @@
+<!DOCTYPE HTML>
+<html xmlns:th="http://www.thymeleaf.org">
+    <style>
+        /* 기본 행 스타일 */
+        .row-link {
+            transition: background-color 0.3s;
+        }
+
+        /* 마우스 hover 상태일 때의 스타일 */
+        .row-link:hover {
+            background-color: #f5f5f5; /* 선택한 색상으로 변경하세요 */
+            cursor: pointer; /* 마우스 호버 효과 포인터로 변경 */
+        }
+
+        .table-row-highlight {
+            background-color: #f5f5f5 !important; /* 선택된 행 배경색 */
+            cursor: pointer; /* 마우스 호버 효과 포인터로 변경 */
+        }
+
+        .table-row-highlight:hover {
+            background-color: #e0e0e0 !important;
+        }
+    </style>
+
+    <head th:replace="fragments/header :: header">
+        <title>Hello</title>
+        <meta http-equiv="Content-Type" content="text/html; charset=UTF-8"/>
+    </head>
+    <body>
+        <div class="container">
+            <div th:replace="fragments/bodyHeader :: bodyHeader"/>
+            <div class="jumbotron"><h2>뉴스 알리미</h2></div>
+
+            <div class="news-list">
+                <!-- 언론사 리스트 -->
+                <!-- 언론사 리스트 페이징 -->
+            </div>
+
+            <div class="spot-news-list">
+                <!-- 주요 뉴스 리스트 -->
+                <!-- 주요 뉴스 리스트 페이징 -->
+            </div>
+            <div th:replace="fragments/footer :: footer"/>
+        </div> <!-- /container -->
+    </body>
+</html>

@@ -1,0 +1,52 @@
+<!DOCTYPE HTML>
+<html xmlns:th="http://www.thymeleaf.org">
+<head th:replace="fragments/header :: header"/>
+<body>
+<div class="container">
+    <div th:replace="fragments/bodyHeader :: bodyHeader"/>
+
+<!--    <div th:with="userDetails=${#authentication.principal}">-->
+        <!-- 회원 정보 부분 -->
+        <div class="user-details">
+            <div class="user-info">
+                <table class="table table-striped">
+                    <tbody>
+                        <tr>
+                            <input type="hidden" th:value="${memberDto.id}"/>
+                        </tr>
+                        <tr>
+                            <th>이름</th>
+                            <td th:text="${memberDto.name}"></td>
+                        </tr>
+                        <tr>
+                            <th>패스워드</th>
+                            <td th:if="${memberDto.password != null}" th:text="${memberDto.password} ? '********' : ''"></td>
+                        </tr>
+                        <tr>
+                            <th>이메일</th>
+                            <td th:text="${memberDto.email}"></td>
+                        </tr>
+                        <tr>
+                            <th>가입 날짜</th>
+                            <td th:text="${memberDto.joinDate}"></td>
+                        </tr>
+                        <tr>
+                            <th>가입 경로</th>
+                            <td th:text="${memberDto.provider}"></td>
+                        </tr>
+                        <tr>
+                            <td></td>
+                            <td th:align="right">
+                                <a href="#" th:href="@{/members/{id}/withdrawal(id=${memberDto.id})}" class="btn btn-primary" role="button">회원 탈퇴</a>
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <div th:replace="fragments/footer :: footer"/>
+</div> <!-- /container -->
+</body>
+</html>
