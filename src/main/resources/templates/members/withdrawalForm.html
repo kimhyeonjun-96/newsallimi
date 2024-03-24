@@ -4,68 +4,129 @@
 <style>
     .fieldError {
         border-color: #bd2130;
-    } </style>
+    }
+</style>
 <body>
-    <div class="container">
-        <div th:replace="fragments/bodyHeader :: bodyHeader"/>
+<div class="container">
+    <div th:replace="fragments/bodyHeader :: bodyHeader"/>
 
-        <!-- 이메일 인증 요청 버튼 -->
-        <form action="#" method="post" th:action="@{/request-email-verification}">
-            <div class="form-group">
-                <label for="email">이메일 인증</label>
-                <input type="hidden" th:value="${memberDto.id}"/>
-                <input type="email" id="email" name="email" class="form-control" placeholder="이메일" th:value="${memberDto.email}" readonly>
-                <button id="request-verification-btn" type="submit" class="btn btn-primary">이메일 인증 요청</button>
+    <!-- 이메일 인증 요청 버튼 -->
+    <div class="form-group">
+        <div class="mb-3">
+            <div class="row">
+                <div class="col-10">
+                    <input type="email" id="email" name="email" class="form-control" placeholder="이메일" th:value="${memberDto.email}" readonly>
+                </div>
+                <div class="col-2">
+                    <input type="button" class="btn btn-outline-primary" name="sendEmail" id="sendEmail" onclick="sendEmail()" value="메일인증">
+                </div>
             </div>
-        </form>
+        </div>
+    </div>
 
-        <!-- 이메일 인증 코드 입력 폼 -->
-        <form action="#" method="post" th:action="@{/verify-email}" th:if="${verificationRequested}">
-            <div class="form-group">
-                <label for="verificationCode">인증 코드</label>
-                <input type="text" id="verificationCode" name="verificationCode" class="form-control" placeholder="인증 코드" required>
-                <p>이메일로 전송된 코드를 입력하세요.</p>
-                <button id="verify-code-btn" type="submit" class="btn btn-primary">인증 확인</button>
+    <!-- 인증 코드 입력 폼 -->
+    <div class="form-group">
+        <div class="mb-3">
+            <div class="row">
+                <div class="col-10">
+                    <input type="text" id="verificationCode" name="verificationCode" class="form-control" placeholder="인증 코드">
+                </div>
+                <div class="col-2">
+                    <input type="button" class="btn btn-outline-primary" name="checkEmailNumber" id="checkEmailNumber" onclick="verifyCode()" value="인증 확인" required>
+                </div>
             </div>
-        </form>
+        </div>
+    </div>
 
-        <!-- 회원 탈퇴 버튼 -->
-        <form action="#" method="post" th:action="@{/withdraw}" th:if="${emailVerified}">
-            <button type="submit" class="btn btn-danger">회원 탈퇴</button>
-        </form>
+<!--    <form id="withdrawFormVerified" action="#" method="post">-->
+<!--        <button type="submit" class="btn btn-danger" onclick="handleEmailVerificationSuccess()">회원 탈퇴</button>-->
+<!--    </form>-->
 
-        <br/>
-        <div th:replace="fragments/footer :: footer"/>
-    </div> <!-- /container -->
+    <!-- 회원 탈퇴 버튼 -->
+    <form id="withdrawFormVerified" method="post" style="display: none;">
+        <button type="submit" class="btn btn-danger">회원 탈퇴</button>
+    </form>
+
+    <br/>
+    <div th:replace="fragments/footer :: footer"/>
+</div> <!-- /container -->
 </body>
 
-<script>
-    // 이메일 인증 요청 버튼 클릭 시
-    $("#request-verification-btn").click(function() {
-        var email = $("#email").val(); // 사용자 이메일 가져오기
-        $.post("/request-email-verification", { id: id, email: email }, function(response) {
-            // 서버 응답이 성공인 경우
-            if (response === "success") {
-                // 이메일 인증 요청이 성공했음을 표시하기 위해 verificationRequested 변수를 설정
-                window.verificationRequested = true;
-                // 이메일 인증 코드 입력 폼 표시
-                $("#verification-code-form").show();
-            }
-        });
-    });
+<script type="text/javascript" src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+<script th:inline="javascript">
 
-    // 인증 확인 버튼 클릭 시
-    $("#verify-code-btn").click(function() {
-        var verificationCode = $("#verificationCode").val(); // 인증 코드 가져오기
-        $.post("/verify-email", { verificationCode: verificationCode }, function(response) {
-            // 서버 응답이 성공인 경우
-            if (response === "success") {
-                // 이메일 인증이 완료되었음을 표시하기 위해 emailVerified 변수를 설정
-                window.emailVerified = true;
-                // 회원 탈퇴 버튼 활성화
-                $("#withdrawal-btn").prop("disabled", false);
+    // 인증번호 발송
+    function sendEmail(){
+
+        const name = /*[[${memberDto.name}]]*/ '';
+        const email = /*[[${memberDto.email}]]*/ '';
+
+        $.ajax({
+            url: "/request-email-verification",
+            type: "POST",
+            data: {
+                "name" : name,
+                "email": email
+            },
+            success: function (data) {
+                alert("인증번호가 발송되었습니다.");
+            },
+            error: function (error) {
+                alert("인증번호 발송에 실패했습니다.");
             }
         });
-    });
+    }
+
+    // 인증번호 검증
+    function verifyCode(){
+
+        const name = /*[[${memberDto.name}]]*/ '';
+        const token = $("#verificationCode").val();
+
+        if (!token || token.trim() === '') { // 인증번호입력없이 확인하기를 눌렀을 경우 알림
+            alert("인증번호를 입력해주세요.");
+            return;
+        }
+
+        $.ajax({
+            url: "/verify-email",
+            type: "POST",
+            data: {
+                "name" : name,
+                "token": token
+            },
+            success: function (data) {
+                var responseData = JSON.parse(data);
+                if (responseData.status === 'success') {
+                    alert("인증에 성공했습니다.");
+                    handleEmailVerificationSuccess(responseData.emailVerified)
+                }
+            },
+            error: function (error){
+                alert("인증에 실패했습니다.");
+                $("#warningMsg").html("인증에 실패했습니다. 다시 시도해주세요.");
+                $("#verificationCode").addClass("fieldError");
+            }
+        });
+    }
+
+    function handleEmailVerificationSuccess(emailVerified){
+
+        $("#warningMsg").html("");
+        $("#checkEmailNumber").prop("disabled", true);
+        $("#verificationCode").prop("readonly", true);
+        updateWithdrawalButton(emailVerified);
+    }
+
+    function updateWithdrawalButton(emailVerified){
+
+        if (emailVerified) {
+            $("#withdrawFormVerified").show(); // 이메일이 인증된 경우 버튼 표시
+        } else {
+            $("#withdrawFormVerified").hide(); // 이메일이 인증되지 않은 경우 버튼 숨김
+        }
+    }
+
 </script>
+
 </html>

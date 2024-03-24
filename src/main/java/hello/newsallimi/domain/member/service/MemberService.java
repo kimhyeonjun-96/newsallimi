@@ -12,6 +12,7 @@ import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.Optional;
 import java.util.UUID;
 
 @Slf4j
@@ -21,13 +22,14 @@ import java.util.UUID;
 public class MemberService {
 
     private final MemberRepository memberRepository;
-    private final BCryptPasswordEncoder bCryptPasswordEncoder;
     private final EmailProvider emailProvider;
 
     // 회원 탈퇴를 위한 이메일 요청
-    public  boolean requestEmailVerification(String email) {
+    public  boolean requestEmailVerification(String name, String email) {
 
+        Member findMember = memberRepository.findByName(name).get();
         String createToken = createCertificationKey();
+        findMember.updateToken(createToken);
         return emailProvider.sendCirtificationMail(email, createToken);
     }
 
@@ -41,18 +43,25 @@ public class MemberService {
         return emailProvider.sendCirtificationMail(memberDTO.getEmail(),certificationKey);
     }
 
+    // 회원 탈퇴를 위한 토큰 검증
+    public boolean verifyEmailToken(String name, String receivedToken) {
+
+        Member findMember = memberRepository.findByName(name).get();
+        String storedToken = findMember.responseToken();
+        if(storedToken.equals(receivedToken)){
+            return true;
+        }else{
+            return false;
+        }
+    }
+
     // 회원 탈퇴
     @Transactional
     public String withdrawal(MemberDto memberDTO) {
-        if(sendEmail(memberDTO, createCertificationKey())){
-            log.info("이메일 전송 성공");
-            Member member = memberRepository.findMemberById(memberDTO.getId());
-            memberRepository.delete(member);
-            return "redirect:/logout";
-        }else {
-            log.info("이메일 전송 실패");
-            throw new ServiceException("인증이 실패하였습니다.");
-        }
+
+        Member member = memberRepository.findMemberById(memberDTO.getId());
+        memberRepository.delete(member);
+        return "/logout";
     }
 
     // 회원 이름을 통한 회원 조회

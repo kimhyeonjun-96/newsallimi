@@ -28,6 +28,9 @@ public class Member {
     private String provider;
     private String providerId;
 
+    // 탈퇴 시 생성된 토큰
+    private String token;
+
     // Member 생성자들
     public Member(String name, String password, String email, Timestamp joinDate) {
         this.name = name;
@@ -88,5 +91,13 @@ public class Member {
     // convert to memberDto
     public MemberDto convertToMemberDto(){
         return new MemberDto(this.id, this.name, this.password, this.email, this.joinDate, this.provider);
+    }
+
+    public void updateToken(String createToken) {
+        this.token = createToken;
+    }
+
+    public String responseToken() {
+        return this.token;
     }
 }
