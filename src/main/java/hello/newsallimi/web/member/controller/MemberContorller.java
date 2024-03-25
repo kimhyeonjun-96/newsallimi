@@ -1,24 +1,26 @@
 package hello.newsallimi.web.member.controller;
 
+import hello.newsallimi.config.auth.PrincipalDetails;
+import hello.newsallimi.config.oauth.provider.KakaoApi;
+import hello.newsallimi.domain.auth.service.AuthService;
 import hello.newsallimi.domain.member.service.MemberService;
-import hello.newsallimi.global.common.message.Message;
+import hello.newsallimi.global.common.alertmessage.AlertMessage;
 import hello.newsallimi.web.member.dto.MemberDto;
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
 import jakarta.servlet.http.HttpSession;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.security.web.authentication.logout.SecurityContextLogoutHandler;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
-import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.ModelAndView;
-import org.springframework.web.servlet.mvc.support.RedirectAttributes;
-
-import java.net.URLEncoder;
-import java.nio.charset.StandardCharsets;
 
 @Slf4j
 @Controller
@@ -26,6 +28,7 @@ import java.nio.charset.StandardCharsets;
 public class MemberContorller {
 
     private final MemberService memberService;
+    private final KakaoApi kakaoApi;
 
     // 로그인 페이지 이동
     @GetMapping("/login")
@@ -39,6 +42,8 @@ public class MemberContorller {
 
         MemberDto memberDto = memberService.findMember(SecurityContextHolder.getContext().getAuthentication());
         model.addAttribute("memberDto", memberDto);
+        model.addAttribute("kakaoApiKey", kakaoApi.getKakaoApiKey());
+        model.addAttribute("redirectUri", kakaoApi.getKakaoRedirectUri());
         return "members/mypageForm";
     }
 
@@ -73,7 +78,20 @@ public class MemberContorller {
     public ModelAndView withdrawal(@ModelAttribute("memberDto")MemberDto memberDto, ModelAndView mav){
 
         String redirectUrl = memberService.withdrawal(memberDto);
-        mav.addObject("data", new Message("회원 탈퇴가 완료되었습니다.", redirectUrl));
+        mav.addObject("data", new AlertMessage("회원 탈퇴가 완료되었습니다.", redirectUrl));
+        mav.setViewName("common/message");
+        return mav;
+    }
+
+    // 회원 메시지 전달을 위한 액세스, 리프레시 토큰 발급
+    @GetMapping("/setCode")
+    public ModelAndView sendMessage(@RequestParam String code, @AuthenticationPrincipal PrincipalDetails principalDetails, ModelAndView mav, HttpSession session){
+
+        log.info("code = {}", code);
+        MemberDto memberDto = memberService.addToken(code, principalDetails);
+
+        session.setAttribute("memberDto", memberDto); // 세션에 memberDto 저장
+        mav.addObject("data", new AlertMessage("알림 허용이 완료되었습니다.", "/members/mypage"));
         mav.setViewName("common/message");
         return mav;
     }

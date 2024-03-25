@@ -1,6 +1,9 @@
 package hello.newsallimi.domain.member.service;
 
+import hello.newsallimi.config.auth.PrincipalDetails;
 import hello.newsallimi.config.mail.EmailProvider;
+import hello.newsallimi.domain.auth.Auth;
+import hello.newsallimi.domain.auth.service.AuthService;
 import hello.newsallimi.domain.member.Member;
 import hello.newsallimi.domain.member.repository.MemberRepository;
 import hello.newsallimi.web.member.dto.MemberDto;
@@ -17,12 +20,13 @@ import java.util.UUID;
 
 @Slf4j
 @Service
-@Transactional
+@Transactional(readOnly = true)
 @RequiredArgsConstructor
 public class MemberService {
 
     private final MemberRepository memberRepository;
     private final EmailProvider emailProvider;
+    private final AuthService authService;
 
     // 회원 탈퇴를 위한 이메일 요청
     public  boolean requestEmailVerification(String name, String email) {
@@ -78,4 +82,15 @@ public class MemberService {
         Member findMember = memberRepository.findMemberById(id);
         return findMember.convertToMemberDto();
     }
+
+    @Transactional
+    public MemberDto addToken(String code, PrincipalDetails principalDetails) {
+
+        String memberName = principalDetails.getMember().responseMemberName();
+        Member findMember = memberRepository.findByName(memberName).get();
+        Auth authToken = authService.saveAuthToken(code, findMember);
+        findMember.updateAuthToken(authToken);
+        return findMember.convertToMemberDto();
+    }
+
 }

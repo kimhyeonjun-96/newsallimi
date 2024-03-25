@@ -22,13 +22,15 @@ public class MemberDto {
     private String email;
     private Timestamp joinDate;
     private String provider;
+    private String accessToken;
 
-    public MemberDto(Long id, String name, String password, String email, Timestamp joinDate, String provider) {
+    public MemberDto(Long id, String name, String password, String email, Timestamp joinDate, String provider, String accessToken) {
         this.id = id;
         this.name = name;
         this.password = password;
         this.email = email;
         this.joinDate = joinDate;
         this.provider = provider;
+        this.accessToken = accessToken;
     }
 }

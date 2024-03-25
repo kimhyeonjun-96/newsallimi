@@ -17,6 +17,8 @@ import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.AuthenticationSuccessHandler;
 import org.springframework.security.web.authentication.SimpleUrlAuthenticationFailureHandler;
+import org.springframework.security.web.authentication.logout.LogoutSuccessHandler;
+import org.springframework.security.web.authentication.logout.SecurityContextLogoutHandler;
 import org.springframework.security.web.util.matcher.AntPathRequestMatcher;
 
 import java.io.IOException;
@@ -55,15 +57,31 @@ public class SecurityConfig {
                         .failureHandler(customAuthenticationFailureHandler()))
                 .logout(logout -> logout
                         .logoutRequestMatcher(new AntPathRequestMatcher("/logout"))
-                        .logoutSuccessUrl("/")
+                        .logoutSuccessHandler(customLogoutSuccessHandler())
                         .invalidateHttpSession(true)
                         .permitAll()
-                        )
+                )
                 .oauth2Login(oatuh2 -> oatuh2
                         .loginPage("/login")
                         .successHandler(successHandler())
                         .userInfoEndpoint(userInfo -> userInfo.userService(oAuth2UserService))
                 ).build();
+    }
+
+    private LogoutSuccessHandler customLogoutSuccessHandler() {
+        return new LogoutSuccessHandler() {
+            @Override
+            public void onLogoutSuccess(HttpServletRequest request, HttpServletResponse response, Authentication authentication) throws IOException, ServletException {
+
+                new SecurityContextLogoutHandler().logout(request, response, authentication);
+
+                response.setContentType(MediaType.APPLICATION_JSON_VALUE);
+                response.setCharacterEncoding(StandardCharsets.UTF_8.name());
+                response.getWriter().write("<script>alert('로그아웃 되었습니다.');</script>");
+                response.sendRedirect("/");
+                response.getWriter().flush();
+            }
+        };
     }
 
     @Bean

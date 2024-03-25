@@ -35,13 +35,23 @@
                             <td th:text="${memberDto.provider}"></td>
                         </tr>
                         <tr>
-                            <td></td>
-                            <td th:align="right">
-                                <a href="#" th:href="@{/members/{id}/withdrawal(id=${memberDto.id})}" class="btn btn-primary" role="button">회원 탈퇴</a>
-                            </td>
+                            <th >알림 허용 상태</th>
+                            <td th:if="${memberDto.accessToken} != null" th:text="${memberDto.accessToken} ? '알림 허용' : '알림 반대'"></td>
+                            <td th:if="${memberDto.accessToken} == null" th:text="${memberDto.accessToken} ? '알림 허용' : '알림 반대'"></td>
                         </tr>
                     </tbody>
                 </table>
+
+                <!-- 버튼들 -->
+                <div class="form-group">
+                    <div class="mb-3">
+                        <div class="d-lg-table-row">
+                            <div class="d-lg-table-cell">
+                                <a th:if="${memberDto.accessToken} == null" id="allowNotificationButton" class="btn btn-primary" th:href="'https://kauth.kakao.com/oauth/authorize?client_id='+ ${kakaoApiKey} +'&redirect_uri=http://localhost:8080/setCode&response_type=code&scope=talk_message'">알림 허용</a>
+                                <a href="#" th:href="@{/members/{id}/withdrawal(id=${memberDto.id})}" class="btn btn-primary" role="button">회원 탈퇴</a>
+                            </div>
+                    </div>
+                </div>
             </div>
         </div>
     </div>

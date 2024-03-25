@@ -32,31 +32,137 @@
 
     <div class="jumbotron"><h2>뉴스 알리미</h2></div>
 
-    <div class="news-list">
-        <!-- 언론사 리스트 -->
-        <!-- 언론사 리스트 페이징 -->
-    </div>
+    <div class="form-group">
+        <div class="mb-3">
+            <div class="d-lg-table-row">
+                <div class="row">
+                    <!-- 언론사 리스트 -->
+                    <h5 class="center text-center">언론사 목록</h5>
+                    <table class="table table-striped">
+                        <thead>
+                            <tr>
+                                <th>#</th>
+                                <th>언론사</th>
+                                <th>구독</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <div class="col-md" th:each="news, iterStat : ${allNews}">
+                                    <dl>
+                                        <dt th:hidden="${news.id}"></dt>
+                                        <dd th:text="${news.newsName}" class="list-group-item" th:attr="data-name=${news.newsName}, data-url=${news.url}"
+                                            onclick="redirectToNewsUrl(this.getAttribute('data-name'), this.getAttribute('data-url'))"
+                                            style="cursor: pointer;" th:class="${iterStat.even}? 'even' : 'odd'">
+                                            <a href="#" th:href="@{/news/{id}/subscribe(id=${news.id})}" class="btn btn-primary" role="button">구독</a>
+                                        </dd>
+                                    </dl>
+                                </div>
+                            </tr>
+                        </tbody>
 
-    <div class="spot-news-list">
-        <!-- 주요 뉴스 리스트 -->
-        <!-- 주요 뉴스 리스트 페이징 -->
-    </div>
+<!--                        <table class="table table-striped">-->
+<!--                            <thead>-->
+<!--                            <tr>-->
+<!--                                <th>#</th>-->
+<!--                                <th>언론사</th>-->
+<!--                                <th>구독</th>-->
+<!--                            </tr>-->
+<!--                            </thead>-->
+<!--                            <tbody>-->
+<!--                            <tr th:each="news, iterStat : ${allNews}"-->
+<!--                                th:attr="data-name=${news.newsName}, data-url=${news.url}"-->
+<!--                                onclick="redirectToNewsUrl(this.getAttribute('data-name'), this.getAttribute('data-url'))"-->
+<!--                                style="cursor: pointer;" th:class="${iterStat.even}? 'even' : 'odd'">-->
+<!--                                <td th:text="${news.id}"></td>-->
+<!--                                <td th:text="${news.newsName}"></td>-->
+<!--                                <td>-->
+<!--                                    <a href="#" th:href="@{/news/{id}/subscribe(id=${news.id})}"-->
+<!--                                       class="btn btn-primary" role="button">구독</a>-->
+<!--                                </td>-->
+<!--                            </tr>-->
+<!--                            </tbody>-->
+<!--                        </table>-->
+                    </div>
 
-    <!-- 알림 표시 -->
-    <div th:if="${withdrawalMessage}" class="alert alert-success" role="alert">
-        <span th:text="${withdrawalMessage}"></span>
-    </div>
+                    <!-- 페이징 부분 -->
+                    <div class="center text-center">
+                        <nav>
+                            <ul class="pagination justify-content-center" th:if="${allNews != null}">
+                                <li class="page-item" th:if="${allNews.hasPrevious()}">
+                                    <a class="page-link" th:if="${allNews.previousPageable() != null}"
+                                       th:href="@{/(page=${allNews.previousPageable().pageNumber})}">Previous</a>
+                                </li>
+                                <li th:each="i : ${#numbers.sequence(allNews.number, allNews.totalPages - 1)}"
+                                    th:class="${i == allNews.number ? 'page-item active' : 'page-item'}">
+                                    <a class="page-link" th:href="@{/(page=${i})}" th:text="${i + 1}"></a>
+                                </li>
+                                <li class="page-item" th:if="${allNews.hasNext()}">
+                                    <a class="page-link" th:if="${allNews.nextPageable() != null}"
+                                       th:href="@{/(page=${allNews.nextPageable().pageNumber})}">Next</a>
+                                </li>
+                            </ul>
+                            <ul class="pagination justify-content-center" th:if="${allNews == null}">
+                                <li class="page-item">
+                                    <a class="page-link" href="#">Previous</a>
+                                </li>
+                                <li class="page-item">
+                                    <a class="page-link" href="#">1</a>
+                                </li>
+                                <li class="page-item">
+                                    <a class="page-link" href="#">Next</a>
+                                </li>
+                            </ul>
+                        </nav>
+                    </div>
+                </div>
 
-    <div th:replace="fragments/footer :: footer"/>
+                <div class="d-lg-table-cell">
+                    <h5 class="center text-center">최신 뉴스</h5>
+                    <!-- 구독한 언론사 리스트 -->
+                    <!-- 구독한 언론사 리스트 페이징 -->
+                    <div class="spot-news-list">
+                        <table class="table table-striped">
+                            <thead>
+                            <tr>
+                                <th>#</th>
+                                <th>언론사</th>
+                                <th>제목</th>
+                                <th>내용</th>
+                            </tr>
+                            </thead>
+                            <tbody>
+
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- 알림 표시 -->
+<div th:if="${withdrawalMessage}" class="alert alert-success" role="alert">
+    <span th:text="${withdrawalMessage}"></span>
+</div>
+
+<div th:replace="fragments/footer :: footer"/>
 </div> <!-- /container -->
 </body>
 
-<!-- 추가된 부분: Thymeleaf를 사용하여 withdrawalMessage를 처리 -->
+
+<script type="text/javascript" src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
 <script th:inline="javascript">
     /* 메시지를 Thymeleaf에서 직접 처리 */
     var withdrawalMessage = /*[[${withdrawalMessage}]]*/ '';
     if (withdrawalMessage) {
         alert(withdrawalMessage);
+    }
+
+    function redirectToNewsUrl(newsName, url) {
+        alert(newsName + "(으)로 이동합니다.");
+        window.location.href = url;
     }
 </script>
 

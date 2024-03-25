@@ -1,5 +1,7 @@
 package hello.newsallimi.domain.member;
 
+import hello.newsallimi.domain.auth.Auth;
+import hello.newsallimi.domain.news.News;
 import hello.newsallimi.web.member.dto.MemberDto;
 import jakarta.persistence.*;
 import lombok.AccessLevel;
@@ -30,6 +32,15 @@ public class Member {
 
     // 탈퇴 시 생성된 토큰
     private String token;
+
+    // 회원의 메시지 전달을 위한 액세스 토큰, 리프레시 토큰 저장
+    @OneToOne
+    @JoinColumn(name = "auth_id")
+    private Auth auth;
+
+    // 언론사 구독
+    @ManyToOne
+    private News news;
 
     // Member 생성자들
     public Member(String name, String password, String email, Timestamp joinDate) {
@@ -90,7 +101,35 @@ public class Member {
 
     // convert to memberDto
     public MemberDto convertToMemberDto(){
-        return new MemberDto(this.id, this.name, this.password, this.email, this.joinDate, this.provider);
+
+        boolean check = checkAuthToken();
+        if(!check){
+            return new MemberDto(this.id
+                    , this.name
+                    , this.password
+                    , this.email
+                    , this.joinDate
+                    , this.provider
+                    , null
+            );
+        }else{
+            return new MemberDto(this.id
+                    , this.name
+                    , this.password
+                    , this.email
+                    , this.joinDate
+                    , this.provider
+                    , this.auth.responseAccessToken()
+            );
+        }
+    }
+
+    private boolean checkAuthToken() {
+
+        if(this.auth == null){
+            return false;
+        }
+        return true;
     }
 
     public void updateToken(String createToken) {
@@ -99,5 +138,13 @@ public class Member {
 
     public String responseToken() {
         return this.token;
+    }
+
+    public void updateAuthToken(Auth auth) {
+        this.auth= auth;
+    }
+
+    public String responseAuthToken(){
+        return auth.responseAccessToken();
     }
 }
