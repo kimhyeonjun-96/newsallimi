@@ -2,6 +2,7 @@ package hello.newsallimi.domain.member;
 
 import hello.newsallimi.domain.auth.Auth;
 import hello.newsallimi.domain.news.News;
+import hello.newsallimi.domain.subscription.Subscription;
 import hello.newsallimi.web.member.dto.MemberDto;
 import jakarta.persistence.*;
 import lombok.AccessLevel;
@@ -10,6 +11,8 @@ import lombok.NoArgsConstructor;
 
 import java.sql.Time;
 import java.sql.Timestamp;
+import java.util.ArrayList;
+import java.util.List;
 
 @Entity
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
@@ -38,9 +41,10 @@ public class Member {
     @JoinColumn(name = "auth_id")
     private Auth auth;
 
-    // 언론사 구독
-    @ManyToOne
-    private News news;
+    // 구독한 언론사
+    @OneToMany(mappedBy = "member")
+    private List<Subscription> subscriptionList = new ArrayList<>();
+
 
     // Member 생성자들
     public Member(String name, String password, String email, Timestamp joinDate) {
@@ -111,6 +115,7 @@ public class Member {
                     , this.joinDate
                     , this.provider
                     , null
+                    , this.subscriptionList
             );
         }else{
             return new MemberDto(this.id
@@ -120,6 +125,7 @@ public class Member {
                     , this.joinDate
                     , this.provider
                     , this.auth.responseAccessToken()
+                    , this.subscriptionList
             );
         }
     }
@@ -146,5 +152,15 @@ public class Member {
 
     public String responseAuthToken(){
         return auth.responseAccessToken();
+    }
+
+    public void addSubscription(Subscription subscription) {
+        this.subscriptionList.add(subscription);
+        subscription.addMember(this);
+    }
+
+    public void removeSubscription(Subscription findSubscription) {
+        this.subscriptionList.remove(findSubscription);
+        findSubscription.removeMember(this);
     }
 }

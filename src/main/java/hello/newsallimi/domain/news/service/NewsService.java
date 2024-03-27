@@ -1,10 +1,13 @@
 package hello.newsallimi.domain.news.service;
 
+import hello.newsallimi.domain.article.Article;
 import hello.newsallimi.domain.news.News;
 import hello.newsallimi.domain.news.repository.NewsRepository;
+import hello.newsallimi.web.article.dto.ArticleDto;
 import hello.newsallimi.web.news.dto.NewsDto;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.context.MessageSource;
 import org.springframework.data.domain.*;
 import org.springframework.data.web.PageableDefault;
 import org.springframework.stereotype.Service;
@@ -12,6 +15,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Locale;
 
 @Slf4j
 @Service
@@ -19,6 +23,7 @@ import java.util.List;
 @RequiredArgsConstructor
 public class NewsService {
 
+    private final MessageSource messageSource;
     private final NewsRepository newsRepository;
 
     // 모든 언론사 반환

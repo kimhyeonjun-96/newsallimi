@@ -2,6 +2,7 @@ package hello.newsallimi.domain.news;
 
 import hello.newsallimi.domain.article.Article;
 import hello.newsallimi.domain.member.Member;
+import hello.newsallimi.domain.subscription.Subscription;
 import hello.newsallimi.web.news.dto.NewsDto;
 import jakarta.persistence.*;
 import lombok.AccessLevel;
@@ -25,7 +26,7 @@ public class News {
     private List<Article> articleList = new ArrayList<>();
 
     @OneToMany(mappedBy = "news")
-    private List<Member> memberList = new ArrayList<>();
+    private List<Subscription> subscriptionList = new ArrayList<>();
 
 
     public News(String newsName, String url) {
@@ -49,5 +50,23 @@ public class News {
 
     public NewsDto convertToNewsDto() {
         return new NewsDto(this.id, this.newsName, this.url);
+    }
+
+    public Long responseId() {
+        return this.id;
+    }
+
+    public List<Article> responseArticleList() {
+        return articleList;
+    }
+
+    public void addSubscription(Subscription subscription) {
+        subscriptionList.add(subscription);
+        subscription.addNews(this);
+    }
+
+    public void removeSubscription(Subscription findSubscription) {
+        subscriptionList.remove(findSubscription);
+        findSubscription.removeNews(this);
     }
 }

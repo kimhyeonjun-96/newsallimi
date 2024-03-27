@@ -60,7 +60,7 @@ public class CrawlingNews implements SchedulingConfigurer {
                     List<WebElement> url_list = element.findElements(By.tagName("a"));
                     for (WebElement webElement : url_list) {
 
-                        News findNews = newsRepository.findByNewsName(webElement.getText());
+                        News findNews = newsRepository.findByNewsName(webElement.getText()).get();
                         if(findNews == null){
                             if(webElement.getText().equals("연합뉴스")){ // 연합뉴스만 오류가 나서 제외
                                 continue;

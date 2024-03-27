@@ -60,26 +60,50 @@ public class CrawlingArticles implements SchedulingConfigurer {
                     String title = "";
                     String url = "";
                     String description = "";
+                    String articleNewsName = "";
+                    String imgUrl = "";
+                    String alt = "";
 
                     for (WebElement webElement : newspaperArea) {
 
                         List<WebElement> dt = webElement.findElements(By.tagName("dt"));
                         for (WebElement element : dt) {
+                            if (element.getText().equals("")) continue;
+
                             title = element.getText();
-                            if (title.equals("")) {
-                                continue;
-                            }
                             url = element.findElement(By.tagName("a")).getAttribute("href");
                             System.out.println("title = " + title);
                             System.out.println("url = " + url);
                         }
+
+
                         List<WebElement> lede = webElement.findElements(By.className("lede"));
                         for (WebElement element : lede) {
                             description = element.getText();
                             System.out.println("description = " + description);
                         }
 
-                        Article article = new Article(title, url, description);
+                        List<WebElement> writing = webElement.findElements(By.className("writing"));
+                        for (WebElement element : writing) {
+                            articleNewsName = element.getText();
+                            System.out.println("articleNewsName = " + articleNewsName);
+                        }
+
+                        if(news.responseNewsName().equals("언론사 최신기사")){
+                            List<WebElement> photo = webElement.findElements(By.className("photo"));
+                            for (WebElement element : photo) {
+                                List<WebElement> img = element.findElements(By.tagName("img"));
+                                for (WebElement webElement1 : img) {
+                                    imgUrl = webElement1.getAttribute("src");
+                                    alt = webElement1.getAttribute("alt");
+                                }
+                            }
+                            System.out.println("언론사 최신기사 이미지 Url = " + imgUrl);
+                            System.out.println("언론사 최신기사 alt = " + alt);
+                        }
+
+
+                        Article article = new Article(title, description, url, articleNewsName, imgUrl, alt);
                         news.addArticle(article);
                         articleRepository.save(article);
                     }

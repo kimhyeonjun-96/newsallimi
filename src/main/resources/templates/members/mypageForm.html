@@ -5,58 +5,114 @@
 <div class="container">
     <div th:replace="fragments/bodyHeader :: bodyHeader"/>
 
-<!--    <div th:with="userDetails=${#authentication.principal}">-->
-        <!-- 회원 정보 부분 -->
-        <div class="user-details">
-            <div class="user-info">
-                <table class="table table-striped">
-                    <tbody>
-                        <tr>
-                            <input type="hidden" th:value="${memberDto.id}"/>
-                        </tr>
-                        <tr>
-                            <th>이름</th>
-                            <td th:text="${memberDto.name}"></td>
-                        </tr>
-                        <tr>
-                            <th>패스워드</th>
-                            <td th:if="${memberDto.password != null}" th:text="${memberDto.password} ? '********' : ''"></td>
-                        </tr>
-                        <tr>
-                            <th>이메일</th>
-                            <td th:text="${memberDto.email}"></td>
-                        </tr>
-                        <tr>
-                            <th>가입 날짜</th>
-                            <td th:text="${memberDto.joinDate}"></td>
-                        </tr>
-                        <tr>
-                            <th>가입 경로</th>
-                            <td th:text="${memberDto.provider}"></td>
-                        </tr>
-                        <tr>
-                            <th >알림 허용 상태</th>
-                            <td th:if="${memberDto.accessToken} != null" th:text="${memberDto.accessToken} ? '알림 허용' : '알림 반대'"></td>
-                            <td th:if="${memberDto.accessToken} == null" th:text="${memberDto.accessToken} ? '알림 허용' : '알림 반대'"></td>
-                        </tr>
-                    </tbody>
-                </table>
+    <!--    <div th:with="userDetails=${#authentication.principal}">-->
+    <!-- 회원 정보 부분 -->
+    <div class="user-details">
+        <div class="user-info">
+            <table class="table table-striped">
+                <tbody>
+                <tr>
+                    <input type="hidden" th:value="${memberDto.id}"/>
+                </tr>
+                <tr>
+                    <th>이름</th>
+                    <td th:text="${memberDto.name}"></td>
+                </tr>
+                <tr>
+                    <th>패스워드</th>
+                    <td th:if="${memberDto.password != null}" th:text="${memberDto.password} ? '********' : ''"></td>
+                </tr>
+                <tr>
+                    <th>이메일</th>
+                    <td th:text="${memberDto.email}"></td>
+                </tr>
+                <tr>
+                    <th>가입 날짜</th>
+                    <td th:text="${memberDto.joinDate}"></td>
+                </tr>
+                <tr>
+                    <th>가입 경로</th>
+                    <td th:text="${memberDto.provider}"></td>
+                </tr>
+                <tr>
+                    <th>알림 허용 상태</th>
+                    <td th:if="${memberDto.accessToken} != null"
+                        th:text="${memberDto.accessToken} ? '알림 허용' : '알림 반대'"></td>
+                    <td th:if="${memberDto.accessToken} == null"
+                        th:text="${memberDto.accessToken} ? '알림 허용' : '알림 반대'"></td>
+                </tr>
+                </tbody>
+            </table>
 
-                <!-- 버튼들 -->
-                <div class="form-group">
-                    <div class="mb-3">
-                        <div class="d-lg-table-row">
-                            <div class="d-lg-table-cell">
-                                <a th:if="${memberDto.accessToken} == null" id="allowNotificationButton" class="btn btn-primary" th:href="'https://kauth.kakao.com/oauth/authorize?client_id='+ ${kakaoApiKey} +'&redirect_uri=http://localhost:8080/setCode&response_type=code&scope=talk_message'">알림 허용</a>
-                                <a href="#" th:href="@{/members/{id}/withdrawal(id=${memberDto.id})}" class="btn btn-primary" role="button">회원 탈퇴</a>
-                            </div>
+            <!-- 버튼들 -->
+            <div class="form-group">
+                <div class="mb-3">
+                    <div class="d-lg-table-row">
+                        <div class="d-lg-table-cell">
+                            <a th:if="${memberDto.accessToken} == null" id="allowNotificationButton"
+                               class="btn btn-primary"
+                               th:href="'https://kauth.kakao.com/oauth/authorize?client_id='+ ${kakaoApiKey} +'&redirect_uri=http://localhost:8080/setCode&response_type=code&scope=talk_message'">알림
+                                허용</a>
+                            <a href="#" th:href="@{/members/{id}/withdrawal(id=${memberDto.id})}"
+                               class="btn btn-primary" role="button">회원 탈퇴</a>
+                        </div>
                     </div>
                 </div>
             </div>
+        </div>
+
+        <div class="user-subscribe-news">
+            <table class="table table-striped">
+                <thead>
+                    <tr>
+                        <th>#</th>
+                        <th>언론사</th>
+                        <th>구독 취소</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr th:if="${#lists.isEmpty(allSubscriptionByMemmber.getContent())}">
+                        <td colspan="8">
+                            <p th:align="center">아직 구독한 언론사가 없습니다.</p>
+                        </td>
+                    </tr>
+                    <tr th:each="subscriptionNews, iterStat : ${allSubscriptionByMemmber}">
+                        <td th:text="${iterStat.count}"></td>
+                        <td th:text="${subscriptionNews.newsName}"></td>
+                        <td>
+                            <a th:attr="data-subscription-id=${subscriptionNews.id}, data-member-name=${subscriptionNews.memberName}, data-news-name=${subscriptionNews.newsName}"
+                                onclick="cancleSubscription(this.getAttribute('data-subscription-id'), this.getAttribute('data-member-name'), this.getAttribute('data-news-name'))"
+                                class="btn btn-primary" role="button">구독 취소</a>
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
         </div>
     </div>
 
     <div th:replace="fragments/footer :: footer"/>
 </div> <!-- /container -->
+
+<script type="text/javascript" src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+<script th:inline="javascript">
+    function cancleSubscription(subscriptionId, memberName, newsName) {
+        $.ajax({
+            url: "/members/news/unsubscribe",
+            type: "POST",
+            data:{
+                "subscriptionId" : subscriptionId,
+                "memberName" : memberName,
+                "newsName" : newsName
+            },
+            success: function (data) {
+                alert(memberName + "님의 " + newsName + " 구독이 취소되었습니다.");
+                location.reload();
+            },
+            error: function (data) {
+                alert("구독 취소에 실패했습니다.");
+            }
+        });
+    }
+</script>
 </body>
 </html>

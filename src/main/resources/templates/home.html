@@ -27,114 +27,121 @@
     <meta http-equiv="Content-Type" content="text/html; charset=UTF-8"/>
 </head>
 <body>
+
 <div class="container">
     <div th:replace="fragments/bodyHeader :: bodyHeader"/>
-
+    <!-- 알림 표시 -->
+    <div th:if="${withdrawalMessage}" class="alert alert-success" role="alert">
+        <span th:text="${withdrawalMessage}"></span>
+    </div>
     <div class="jumbotron"><h2>뉴스 알리미</h2></div>
-
-    <div class="form-group">
-        <div class="mb-3">
-            <div class="d-lg-table-row">
-                <div class="row">
-                    <!-- 언론사 리스트 -->
-                    <h5 class="center text-center">언론사 목록</h5>
-                    <table class="table table-striped">
-                        <thead>
-                            <tr>
-                                <th>#</th>
-                                <th>언론사</th>
-                                <th>구독</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            <tr>
-                                <div class="col-md" th:each="news, iterStat : ${allNews}">
-                                    <dl>
-                                        <dt th:hidden="${news.id}"></dt>
-                                        <dd th:text="${news.newsName}" class="list-group-item" th:attr="data-name=${news.newsName}, data-url=${news.url}"
-                                            onclick="redirectToNewsUrl(this.getAttribute('data-name'), this.getAttribute('data-url'))"
-                                            style="cursor: pointer;" th:class="${iterStat.even}? 'even' : 'odd'">
-                                            <a href="#" th:href="@{/news/{id}/subscribe(id=${news.id})}" class="btn btn-primary" role="button">구독</a>
-                                        </dd>
-                                    </dl>
-                                </div>
-                            </tr>
-                        </tbody>
-
-<!--                        <table class="table table-striped">-->
-<!--                            <thead>-->
-<!--                            <tr>-->
-<!--                                <th>#</th>-->
-<!--                                <th>언론사</th>-->
-<!--                                <th>구독</th>-->
-<!--                            </tr>-->
-<!--                            </thead>-->
-<!--                            <tbody>-->
-<!--                            <tr th:each="news, iterStat : ${allNews}"-->
-<!--                                th:attr="data-name=${news.newsName}, data-url=${news.url}"-->
-<!--                                onclick="redirectToNewsUrl(this.getAttribute('data-name'), this.getAttribute('data-url'))"-->
-<!--                                style="cursor: pointer;" th:class="${iterStat.even}? 'even' : 'odd'">-->
-<!--                                <td th:text="${news.id}"></td>-->
-<!--                                <td th:text="${news.newsName}"></td>-->
-<!--                                <td>-->
-<!--                                    <a href="#" th:href="@{/news/{id}/subscribe(id=${news.id})}"-->
-<!--                                       class="btn btn-primary" role="button">구독</a>-->
-<!--                                </td>-->
-<!--                            </tr>-->
-<!--                            </tbody>-->
-<!--                        </table>-->
+</div>
+<div class="row">
+    <div class="col-md-8">
+        <div class="form-group">
+            <div class="mb-auto">
+                <h5 class="center text-center">최신 뉴스</h5>
+                <div class="d-lg-table-row">
+                    <!-- 최신 기사들 -->
+                    <!-- 최신 기사들 리스트 페이징 -->
+                    <div class="card-columns">
+                        <div class="card" th:each="article, iterStat : ${latestNews}">
+                            <img th:src="${article.imgUrl}" th:alt="${article.alt}"
+                                 onerror="javascript:this.src='https://ssl.pstatic.net/static.news/image/news/2009/noimage_106x72.png';"
+                                 class="card-img-top"
+                                 style="width: 289px; height: 100px;">
+                            <div class="card-body">
+                                <h5 class="card-title" th:text="${article.title}"
+                                    th:attr="data-news-title=${article.title}, data-article-url=${article.url}"
+                                    onclick="redirectToArticleUrl(this.getAttribute('data-news-title'), this.getAttribute('data-article-url'))"
+                                    style="cursor: pointer;"></h5>
+                                <p class="card-text" th:text="${article.description}"
+                                   th:attr="data-news-title=${article.title}, data-article-url=${article.url}"
+                                   onclick="redirectToArticleUrl(this.getAttribute('data-news-title'), this.getAttribute('data-article-url'))"
+                                   style="cursor: pointer;"></p>
+                                <p class="card-text"><small class="text-muted" th:text="${article.subNewsName}"></small>
+                                </p>
+                            </div>
+                        </div>
                     </div>
-
                     <!-- 페이징 부분 -->
-                    <div class="center text-center">
+                    <div id="latestNewsPagination" class="center text-center">
                         <nav>
-                            <ul class="pagination justify-content-center" th:if="${allNews != null}">
-                                <li class="page-item" th:if="${allNews.hasPrevious()}">
-                                    <a class="page-link" th:if="${allNews.previousPageable() != null}"
-                                       th:href="@{/(page=${allNews.previousPageable().pageNumber})}">Previous</a>
+                            <ul class="pagination justify-content-center" th:if="${latestNews != null}">
+                                <li class="page-item" th:if="${latestNews.hasPrevious()}">
+                                    <a class="page-link" th:if="${latestNews.previousPageable() != null}"
+                                       th:href="@{/(page=${latestNews.previousPageable().pageNumber})}">Previous
+                                    </a>
                                 </li>
-                                <li th:each="i : ${#numbers.sequence(allNews.number, allNews.totalPages - 1)}"
-                                    th:class="${i == allNews.number ? 'page-item active' : 'page-item'}">
+
+                                <li th:each="i : ${#numbers.sequence(0, latestNews.totalPages - 1)}"
+                                    th:class="${i == latestNews.number ? 'page-item active' : 'page-item'}">
                                     <a class="page-link" th:href="@{/(page=${i})}" th:text="${i + 1}"></a>
                                 </li>
-                                <li class="page-item" th:if="${allNews.hasNext()}">
-                                    <a class="page-link" th:if="${allNews.nextPageable() != null}"
-                                       th:href="@{/(page=${allNews.nextPageable().pageNumber})}">Next</a>
-                                </li>
-                            </ul>
-                            <ul class="pagination justify-content-center" th:if="${allNews == null}">
-                                <li class="page-item">
-                                    <a class="page-link" href="#">Previous</a>
-                                </li>
-                                <li class="page-item">
-                                    <a class="page-link" href="#">1</a>
-                                </li>
-                                <li class="page-item">
-                                    <a class="page-link" href="#">Next</a>
+
+                                <li class="page-item" th:if="${latestNews.hasNext()}">
+                                    <a class="page-link" th:if="${latestNews.nextPageable() != null}"
+                                       th:href="@{/(page=${latestNews.nextPageable().pageNumber})}">Next</a>
                                 </li>
                             </ul>
                         </nav>
                     </div>
                 </div>
+            </div>
+        </div>
+    </div>
 
-                <div class="d-lg-table-cell">
-                    <h5 class="center text-center">최신 뉴스</h5>
-                    <!-- 구독한 언론사 리스트 -->
-                    <!-- 구독한 언론사 리스트 페이징 -->
-                    <div class="spot-news-list">
-                        <table class="table table-striped">
-                            <thead>
-                            <tr>
-                                <th>#</th>
-                                <th>언론사</th>
-                                <th>제목</th>
-                                <th>내용</th>
-                            </tr>
-                            </thead>
-                            <tbody>
-
-                            </tbody>
-                        </table>
+    <div class="col-md-3">
+        <div class="form-group">
+            <div class="mb-auto">
+                <!-- 언론사 리스트 -->
+                <!--            <div class="d-lg-table-row">-->
+                <div class="news-list">
+                    <h5 class="center text-center">언론사 목록</h5>
+                    <table class="table table-striped">
+                        <thead>
+                        <tr>
+                            <th>#</th>
+                            <th>언론사</th>
+                            <th>구독</th>
+                        </tr>
+                        </thead>
+                        <tbody>
+                        <tr th:each="news, iterStat : ${allNews}">
+                            <td th:text="${news.id}"></td>
+                            <td th:text="${news.newsName}"
+                                th:attr="data-news-name=${news.newsName}, data-news-url=${news.url}"
+                                onclick="redirectToNewsUrl(this.getAttribute('data-news-name'), this.getAttribute('data-news-url'))"
+                                style="cursor: pointer;" th:class="${iterStat.even}? 'even' : 'odd'"></td>
+                            <td>
+                                <a th:attr="data-member=${memberDto}, data-member-name=${memberDto == null ? '' : memberDto.name}, data-news-name=${news.newsName}"
+                                   onclick="subscriptionNews(this.getAttribute('data-member'), this.getAttribute('data-member-name'), this.getAttribute('data-news-name'))"
+                                   class="btn btn-primary" role="button">구독
+                                </a>
+                            </td>
+                        </tr>
+                        </tbody>
+                    </table>
+                    <div class="row">
+                        <!-- 페이징 부분 -->
+                        <div id="allNewsPagination" class="center text-center">
+                            <nav>
+                                <ul class="pagination justify-content-center" th:if="${allNews != null}">
+                                    <li class="page-item" th:if="${allNews.hasPrevious()}">
+                                        <a class="page-link" th:if="${allNews.previousPageable() != null}"
+                                           th:href="@{/(page=${allNews.previousPageable().pageNumber})}">Previous</a>
+                                    </li>
+                                    <li th:each="i : ${#numbers.sequence(allNews.number, allNews.totalPages - 1)}"
+                                        th:class="${i == allNews.number ? 'page-item active' : 'page-item'}">
+                                        <a class="page-link" th:href="@{/(page=${i})}" th:text="${i + 1}"></a>
+                                    </li>
+                                    <li class="page-item" th:if="${allNews.hasNext()}">
+                                        <a class="page-link" th:if="${allNews.nextPageable() != null}"
+                                           th:href="@{/(page=${allNews.nextPageable().pageNumber})}">Next</a>
+                                    </li>
+                                </ul>
+                            </nav>
+                        </div>
                     </div>
                 </div>
             </div>
@@ -142,13 +149,9 @@
     </div>
 </div>
 
-<!-- 알림 표시 -->
-<div th:if="${withdrawalMessage}" class="alert alert-success" role="alert">
-    <span th:text="${withdrawalMessage}"></span>
+<div th:replace="fragments/footer :: footer"/>
 </div>
 
-<div th:replace="fragments/footer :: footer"/>
-</div> <!-- /container -->
 </body>
 
 
@@ -163,6 +166,71 @@
     function redirectToNewsUrl(newsName, url) {
         alert(newsName + "(으)로 이동합니다.");
         window.location.href = url;
+    }
+
+    function redirectToArticleUrl(articleTitle, articleUrl) {
+        alert(articleTitle + " 기사 본문으로 이동합니다.");
+        window.location.href = articleUrl;
+    }
+
+    function subscriptionNews(member, memberName, newsName) {
+
+        if (member === null) {
+            alert("로그인이 필요합니다.");
+            window.location.href = '/login';
+            return;
+        }
+
+        $.ajax({
+            url: "/members/news/subscribe",
+            type: "POST",
+            data: {
+                "memberName": memberName,
+                "newsName": newsName
+            },
+            success: function (data) {
+                alert(newsName + "을(를) " + data);
+            },
+            error: function (error) {
+                alert("구독에 실패했습니다.");
+            }
+        });
+    }
+
+    // 최신 뉴스 페이징 네비게이션 처리
+    $('#latestNewsPagination').on('click', '.page-link', function (e) {
+        e.preventDefault();
+        var url = $(this).attr('href');
+        loadLatestNewsPage(url);
+    });
+
+    function loadLatestNewsPage(url) {
+        $.ajax({
+            url: url,
+            type: 'GET',
+            success: function (data) {
+                $('.card-columns').html($(data).find('.card-columns').html());
+                $('#latestNewsPagination').html($(data).find('#latestNewsPagination').html());
+            }
+        });
+    }
+
+    // 언론사 목록 페이징 네비게이션 처리
+    $('#allNewsPagination').on('click', '.page-link', function (e) {
+        e.preventDefault();
+        var url = $(this).attr('href');
+        loadAllNewsPage(url);
+    });
+
+    function loadAllNewsPage(url) {
+        $.ajax({
+            url: url,
+            type: 'GET',
+            success: function (data) {
+                $('.news-list').html($(data).find('.news-list').html());
+                $('#allNewsPagination').html($(data).find('#allNewsPagination').html());
+            }
+        });
     }
 </script>
 
